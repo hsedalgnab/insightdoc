@@ -10,6 +10,7 @@ from langchain_openai import ChatOpenAI
 
 load_dotenv()
 
+st.set_page_config(page_title="InsightDoc", page_icon="📄")
 st.title("Chat with your PDF 📄")
 st.caption("AI can make mistakes. Please double-check responses.")
 
