@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import FAISS
 from langchain_openai import ChatOpenAI
 
 st.set_page_config(
@@ -39,7 +39,7 @@ if uploaded_file:
             splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=200)
             chunks = splitter.split_documents(docs)
             embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-            db = Chroma.from_documents(chunks, embeddings)
+            db = FAISS.from_documents(chunks, embeddings)
             st.session_state.retriever = db.as_retriever()
             st.session_state.last_file = uploaded_file.name
             st.session_state.messages = []
@@ -47,15 +47,15 @@ if uploaded_file:
     # Initialize the LLM using a custom OAI-compatible endpoint
     llm = ChatOpenAI(
         api_key=os.getenv("API_KEY"),
-        base_url=os.getenv("API_BASE_URL"),
-        model="auto"
+        base_url=os.getenv("BASE_URL"),
+        model=os.getenv("MODEL")
     )
 
     # Display chat history
     for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
 
-    # Accept user questions in a loop
+    # Accept user questions and stream the answer
     if question := st.chat_input("Ask a question about the PDF..."):
         st.session_state.messages.append({"role": "user", "content": question})
         st.chat_message("user").write(question)
