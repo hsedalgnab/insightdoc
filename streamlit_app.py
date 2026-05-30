@@ -8,9 +8,17 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_openai import ChatOpenAI
 
+st.set_page_config(
+    page_title="InsightDoc",
+    page_icon="📄",
+    layout="centered",
+    menu_items={
+        "About": "InsightDoc — AI-powered PDF chat application for document analysis."
+    }
+)
+
 load_dotenv()
 
-st.set_page_config(page_title="InsightDoc", page_icon="📄")
 st.title("Chat with your PDF 📄")
 st.caption("AI can make mistakes. Please double-check responses.")
 
