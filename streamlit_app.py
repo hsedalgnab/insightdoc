@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import tempfile
 from dotenv import load_dotenv
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -23,18 +23,22 @@ st.title("Chat with your PDF 📄")
 st.caption("AI can make mistakes. Please double-check responses.")
 
 # Accept PDF upload from the user
-uploaded_file = st.file_uploader("Upload a PDF file", type="pdf")
+uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"], accept_multiple_files=False)
 
 if uploaded_file:
     # Save the uploaded file to a temporary location on disk
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[1]) as tmp_file:
         tmp_file.write(uploaded_file.read())
         tmp_path = tmp_file.name
 
     # Load and process the PDF only when a new file is uploaded
     if "retriever" not in st.session_state or st.session_state.get("last_file") != uploaded_file.name:
-        with st.spinner("Processing PDF..."):
-            loader = PyPDFLoader(tmp_path)
+        with st.spinner("Processing file..."):
+            if uploaded_file.type == "application/pdf":
+                loader = PyPDFLoader(tmp_path)
+            else:
+                loader = TextLoader(tmp_path)
+
             docs = loader.load()
             splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=200)
             chunks = splitter.split_documents(docs)
